@@ -8,6 +8,7 @@ exports.createServer = function() {
     var app = express()
 
     app.use(express.static(path.join(__dirname, 'public')))
+    app.use(express.bodyParser())
 
     app.get('/newsletters', newsletter.getNewsletters)
     app.post('/newsletters', newsletter.createNewsletter)
@@ -15,7 +16,7 @@ exports.createServer = function() {
 
     app.get('/articles', article.getArticles)
     app.post('/articles', article.createArticle)
-    app.post('/articles/:id', article.getArticle)
+    app.post('/articles/:articleId', article.getArticle)
 
     return app
   })

@@ -3,10 +3,9 @@ var Schema = mongoose.Schema
 
 module.exports = function(db) {
   var NewsletterSchema = new Schema({
-    createdDateTime: {type: Date},
+    createdDateTime: {type: Date, default: function() { return Date.now() }},
     sentDateTime: {type: Date},
     readDateTime: {type: Date},
-    articles: [Schema.ObjectId],
     user: {type: Schema.ObjectId, index: true}
   })
 

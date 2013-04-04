@@ -15,8 +15,8 @@ module.exports = function(Article) {
       })
     },
     getArticle: function(req, res, next) {
-      var id = req.params.id
-      Article.findOne({_id: id}, function(err, article) {
+      var articleId = req.params.articleId
+      Article.findOne({_id: articleId}, function(err, article) {
         if (err) return res.send(500)
         if (!article) return res.send(404)
         return res.json(article)
