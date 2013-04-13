@@ -12,11 +12,11 @@ exports.createServer = function() {
 
     app.get('/newsletters', newsletter.getNewsletters)
     app.post('/newsletters', newsletter.createNewsletter)
-    app.get('/newsletters/:id', newsletter.getNewsletter)
+    app.get('/newsletters/:newsletterId', newsletter.getNewsletter)
 
     app.get('/articles', article.getArticles)
     app.post('/articles', article.createArticle)
-    app.post('/articles/:articleId', article.getArticle)
+    app.get('/articles/:articleId', article.getArticle)
 
     return app
   })

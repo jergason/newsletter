@@ -6,6 +6,7 @@ module.exports = function(db) {
     createdDateTime: {type: Date, default: function() { return Date.now() }},
     sentDateTime: {type: Date},
     readDateTime: {type: Date},
+    articleIds: [{type: Schema.ObjectId}],
     user: {type: Schema.ObjectId, index: true}
   })
 
