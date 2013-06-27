@@ -7,7 +7,7 @@ module.exports = function(db) {
     sentDateTime: {type: Date},
     readDateTime: {type: Date},
     articleIds: [{type: Schema.ObjectId}],
-    user: {type: Schema.ObjectId, index: true}
+    userId: {type: Schema.ObjectId, index: true}
   })
 
   return db.model('Newsletter', NewsletterSchema)

@@ -1,0 +1,16 @@
+<div class="eight columns articles">
+  <h2>Unassigned Articles</h2>
+  <ul>
+    {{#each article in unassignedArticles}}
+      <li><a {{bindAttr href="article.url"}}>{{article.title}}</a><button {{action addToNewsletter article}}>Add To Newsletter</button></li>
+    {{/each}}
+  </ul>
+
+
+  <h2>Assigned Articles</h2>
+  <ul>
+    {{#each article in assignedArticles}}
+      <li><a {{bindAttr href="article.url"}}>{{article.title}}</a></li>
+    {{/each}}
+  </ul>
+</div>

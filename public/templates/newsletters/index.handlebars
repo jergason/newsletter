@@ -1,0 +1,7 @@
+<div class="newsletters">
+  <ul>
+    {{#each newsletter in controller}}
+    <li>{{#linkTo newsletters.show newsletter}}Created {{newsletter.createdDateTime}}{{/linkTo}}</li>
+    {{/each}}
+  </ul>
+</div>

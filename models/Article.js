@@ -6,7 +6,8 @@ module.exports = function(db) {
     url: {type: String},
     title: {type: String},
     createdDateTime: {type: Date, default: function() {return Date.now()}},
-    newsletterId: {type: Schema.ObjectId}
+    newsletterId: {type: Schema.ObjectId},
+    userId: {type: Schema.ObjectId}
   })
 
   ArticleSchema.index({_id:1, newsletterId: 1})
