@@ -5,5 +5,8 @@ App.Router.map(function() {
     this.route('show', {path: '/:newsletter_id'})
   })
 
-  this.resource('articles')
+  this.resource('articles', function() {
+    this.route('select_newsletter', {path: '/selectNewsletter'})
+    this.route('add_to_newsletter', {path: '/addToNewsletter/:newsletter_id'})
+  })
 })

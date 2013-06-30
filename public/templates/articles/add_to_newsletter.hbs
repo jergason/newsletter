@@ -1,0 +1,7 @@
+<ul>
+  {{#each article in ownArticles}}
+    <li><a {{bindAttr href="article.url"}}>{{article.title}}</a></li>
+  {{/each}}
+</ul>
+
+<button {{action sendNewsletter this}}>Send</button>

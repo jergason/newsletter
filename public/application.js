@@ -24,8 +24,29 @@ App.Router.map(function() {
     this.route('show', {path: '/:newsletter_id'})
   })
 
-  this.resource('articles')
+  this.resource('articles', function() {
+    this.route('select_newsletter', {path: '/selectNewsletter'})
+    this.route('add_to_newsletter', {path: '/addToNewsletter/:newsletter_id'})
+  })
 })
+
+});require.register("controllers/articles/add_to_newsletter_controller.js", function(module, exports, require, global){
+var C = Ember.ObjectController.extend({
+  needs: "articles",
+  ownArticles: function() {
+    var self = this
+    return this.get('controllers.articles.content').filter(function(article) {
+      return article.get('newsletterId') == self.content.get('_id')
+    })
+  }.property('controllers.articles.content.@each.newsletterId')
+})
+
+module.exports = C
+
+});require.register("controllers/articles/select_newsletter_controller.js", function(module, exports, require, global){
+var ArticlesSelectNewsletterController = Ember.ArrayController.extend({})
+
+module.exports = ArticlesSelectNewsletterController
 
 });require.register("controllers/articles_controller.js", function(module, exports, require, global){
 var ArticlesController = Ember.ArrayController.extend({
@@ -39,9 +60,6 @@ var ArticlesController = Ember.ArrayController.extend({
       return article.get('newsletterId') != null
     })
   }.property('content.@each.newsletterId'),
-  addToNewsletter: function(article) {
-
-  }
 })
 
 module.exports = ArticlesController
@@ -61,12 +79,16 @@ require('./templates');
 
 App.ArticlesController = require('./controllers/articles_controller');
 App.NewslettersIndexController = require('./controllers/newsletters/index_controller');
+App.ArticlesAddToNewsletterController = require('./controllers/articles/add_to_newsletter_controller');
+App.ArticlesSelectNewsletterController = require('./controllers/articles/select_newsletter_controller');
 App.Article = require('./models/article');
 App.Newsletter = require('./models/newsletter');
 App.ArticlesRoute = require('./routes/articles_route');
 App.IndexRoute = require('./routes/index_route');
 App.NewslettersIndexRoute = require('./routes/newsletters/index_route');
 App.NewslettersShowRoute = require('./routes/newsletters/show_route');
+App.ArticlesAddToNewsletterRoute = require('./routes/articles/add_to_newsletter_route');
+App.ArticlesSelectNewsletterRoute = require('./routes/articles/select_newsletter_route');
 
 require('./config/routes');
 
@@ -102,7 +124,6 @@ var Newsletter = Ember.Model.extend({
   sentDateTime: attr(Date),
   readDateTime: attr(Date),
   userId: attr(),
-  articles: hasMany(Article, 'articleIds')
 })
 
 
@@ -111,11 +132,69 @@ Newsletter.url = '/newsletters'
 Newsletter.adapter = Ember.NewsletterAdapter.create()
 module.exports = Newsletter
 
+});require.register("routes/articles/add_to_newsletter_route.js", function(module, exports, require, global){
+var Newsletter = require('../../models/newsletter')
+console.log('$ is', $)
+var R = Ember.Route.extend({
+  model: function(params) {
+    return Newsletter.find(params.newsletter_id)
+  },
+
+  serialize: function(model) {
+    return { newsletter_id: model.get('_id') }
+  },
+
+  events: {
+    addToNewsletter: function(article) {
+      console.log('CALLING ADD TO NEWSLETTER')
+      var newsletter = this.modelFor(this.routeName)
+      article.set('newsletterId', newsletter.get('_id'))
+      newsletter.save()
+      article.save()
+    },
+    sendNewsletter: function(newsletter) {
+      console.log('calling send')
+      return $.ajax({
+        url: '/newsletters/' + newsletter.get('_id') + '/send',
+        method: 'POST',
+        //data: newsletter.toJSON()
+      })
+    },
+    error: function(reason, transition) {
+      console.log('in error handler, errors are', arguments)
+    }
+  }
+})
+
+module.exports = R
+
+});require.register("routes/articles/select_newsletter_route.js", function(module, exports, require, global){
+var Newsletter = require('../../models/newsletter')
+var R = Ember.Route.extend({
+  model: function() {
+    return Newsletter.findAll()
+  },
+})
+
+module.exports = R
+
 });require.register("routes/articles_route.js", function(module, exports, require, global){
 var Article = require('../models/article')
+var Newsletter = require('../models/newsletter')
 var R = Ember.Route.extend({
   model: function() {
     return Article.findAll()
+  },
+  events: {
+    addToNewsletter: function() {
+      console.log('called addToNewsletter on the daddy route')
+      // show the popup for selecting a newsletter to add articles to
+      // TODO: somehow keep track of what article was added so it does that
+      // automatically?
+      // Need to pass same stuff in as the model hook expects
+      this.transitionTo('articles.select_newsletter')
+
+    }
   }
 })
 
@@ -163,11 +242,11 @@ helpers = helpers || Ember.Handlebars.helpers; data = data || {};
   var buffer = '', hashTypes, hashContexts, escapeExpression=this.escapeExpression;
 
 
-  data.buffer.push("<h1>Newsletter</h1>\n");
+  data.buffer.push("<div class=\"row\">\n  <div class=\"large-12 columns\"> <h1>Newsletter</h1></div>\n</div>\n<div class=\"row\">\n  ");
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "outlet", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n");
+  data.buffer.push("\n</div>\n");
   return buffer;
   
 });
@@ -215,7 +294,7 @@ function program3(depth0,data) {
   return buffer;
   }
 
-  data.buffer.push("<div class=\"eight columns articles\">\n  <h2>Unassigned Articles</h2>\n  <ul>\n    ");
+  data.buffer.push("<div class=\"large-8 columns articles\">\n  <h2>Unassigned Articles</h2>\n  <ul>\n    ");
   hashTypes = {};
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "article", "in", "unassignedArticles", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
@@ -225,7 +304,11 @@ function program3(depth0,data) {
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "article", "in", "assignedArticles", {hash:{},inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n  </ul>\n</div>\n");
+  data.buffer.push("\n  </ul>\n\n</div>\n<div class=\"large-4 columns\">\n");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "outlet", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n</div>\n");
   return buffer;
   
 });
@@ -303,6 +386,88 @@ helpers = helpers || Ember.Handlebars.helpers; data = data || {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "newsletter", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\n");
+  return buffer;
+  
+});
+
+Ember.TEMPLATES['articles/add_to_newsletter'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [3,'>= 1.0.0-rc.4'];
+helpers = helpers || Ember.Handlebars.helpers; data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = '', hashContexts, hashTypes;
+  data.buffer.push("\n    <li><a ");
+  hashContexts = {'href': depth0};
+  hashTypes = {'href': "STRING"};
+  data.buffer.push(escapeExpression(helpers.bindAttr.call(depth0, {hash:{
+    'href': ("article.url")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "article.title", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</a></li>\n  ");
+  return buffer;
+  }
+
+  data.buffer.push("<ul>\n  ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers.each.call(depth0, "article", "in", "ownArticles", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n</ul>\n\n<button ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "sendNewsletter", "", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Send</button>\n");
+  return buffer;
+  
+});
+
+Ember.TEMPLATES['articles/select_newsletter'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [3,'>= 1.0.0-rc.4'];
+helpers = helpers || Ember.Handlebars.helpers; data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
+
+function program1(depth0,data) {
+  
+  var buffer = '', stack1, stack2, hashTypes, hashContexts, options;
+  data.buffer.push("\n  <li>\n  ");
+  hashTypes = {};
+  hashContexts = {};
+  options = {hash:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  stack2 = ((stack1 = helpers.linkTo),stack1 ? stack1.call(depth0, "articles.add_to_newsletter", "newsletter", options) : helperMissing.call(depth0, "linkTo", "articles.add_to_newsletter", "newsletter", options));
+  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
+  data.buffer.push("\n  </li>\n  ");
+  return buffer;
+  }
+function program2(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n  ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "newsletter._id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(" created at ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "newsletter.createdDateTime", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(" with ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "newsletter.articles.length", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(" articles\n  ");
+  return buffer;
+  }
+
+  data.buffer.push("<h3>Select Newsletter</h3>\n<ul>\n  ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers.each.call(depth0, "newsletter", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n</ul>\n");
   return buffer;
   
 });

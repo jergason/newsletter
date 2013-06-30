@@ -9,7 +9,6 @@ var Newsletter = Ember.Model.extend({
   sentDateTime: attr(Date),
   readDateTime: attr(Date),
   userId: attr(),
-  articles: hasMany(Article, 'articleIds')
 })
 
 

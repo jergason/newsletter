@@ -25,10 +25,10 @@ module.exports = function(Newsletter) {
     updateNewsletter: function(req, res, next) {
       var newsletterId = req.params.newsletterId
       var newsletter = req.body
-      //delete newsletter._id
+      delete newsletter._id
       console.log('updating a newsletter that is', newsletter)
       Newsletter.findOneAndUpdate({_id: newsletterId}, {$set: newsletter}, function(err, updatedNewsletter) {
-        if (err) return res.send(500)
+        if (err) return res.send(500, err)
         if (!updatedNewsletter) return res.send(404)
         return res.send(200)
       })

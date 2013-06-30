@@ -1,6 +1,6 @@
 var path = require('path')
 var mongoose = require('mongoose')
-var db = mongoose.createConnection('mongodb://localhost:27017/newsletter', { db: { native_parser: true }})
+var db = mongoose.createConnection('mongodb://localhost:27017/newsletter')
 var dependable = require('dependable')
 
 var deps = dependable.container()

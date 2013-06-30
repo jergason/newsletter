@@ -9,9 +9,6 @@ var ArticlesController = Ember.ArrayController.extend({
       return article.get('newsletterId') != null
     })
   }.property('content.@each.newsletterId'),
-  addToNewsletter: function(article) {
-
-  }
 })
 
 module.exports = ArticlesController

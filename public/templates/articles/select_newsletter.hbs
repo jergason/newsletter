@@ -1,0 +1,10 @@
+<h3>Select Newsletter</h3>
+<ul>
+  {{#each newsletter in controller}}
+  <li>
+  {{#linkTo articles.add_to_newsletter newsletter}}
+  {{newsletter._id}} created at {{newsletter.createdDateTime}} with {{newsletter.articles.length}} articles
+  {{/linkTo}}
+  </li>
+  {{/each}}
+</ul>

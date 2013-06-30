@@ -1,4 +1,4 @@
-<div class="eight columns articles">
+<div class="large-8 columns articles">
   <h2>Unassigned Articles</h2>
   <ul>
     {{#each article in unassignedArticles}}
@@ -13,4 +13,8 @@
       <li><a {{bindAttr href="article.url"}}>{{article.title}}</a></li>
     {{/each}}
   </ul>
+
+</div>
+<div class="large-4 columns">
+{{outlet}}
 </div>

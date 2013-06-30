@@ -25,10 +25,10 @@ module.exports = function(Article) {
     updateArticle: function(req, res, next) {
       var articleId = req.params.articleId
       var article = req.body
-      //delete article._id
+      delete article._id
       console.log('updating an article that is', article)
       Article.findOneAndUpdate({_id: articleId}, {$set: article}, function(err, updatedArticle) {
-        if (err) return res.send(500)
+        if (err) return res.send(500, err)
         if (!updatedArticle) return res.send(404)
         return res.send(200)
       })
